@@ -1,0 +1,254 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="css3.css" />
+
+    <title>Tic Tac Toe</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        var isPainted;
+        var canvasContent;
+        var winningCombos;
+        var theCanvas;
+        var c;
+        var cxt;
+        var turn = 0;
+        var squaresFilled = 0;
+        var input;
+		
+        var xScore;
+        var yScore;
+        var ties;
+
+
+        window.onload = function() {
+
+
+            updateT();
+
+            getScores();
+            isPainted = new Array();
+            canvasContent = new Array();
+
+            winningCombos = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+
+            if (!(document.cookie.indexOf('newGame') > -1)) {
+                document.cookie = "newGame=1;path=/";
+                document.cookie = "8=;path=/";
+                document.cookie = "7=;path=/";
+                document.cookie = "6=;path=/";
+                document.cookie = "5=;path=/";
+                document.cookie = "4=;path=/";
+                document.cookie = "3=;path=/";
+                document.cookie = "2=;path=/";
+                document.cookie = "1=;path=/";
+                document.cookie = "0=;path=/";
+
+            }
+
+
+
+
+            var cookies = document.cookie.split(";");
+
+            if (cookies[9][9] == 1) {
+                for (var x = 0; x < 9; x++) {
+                    isPainted[x] = false;
+                    canvasContent[x] = ' ';
+                    document.cookie = "newGame=0;path=/";
+                    document.cookie = "8=;path=/";
+                    document.cookie = "7=;path=/";
+                    document.cookie = "6=;path=/";
+                    document.cookie = "5=;path=/";
+                    document.cookie = "4=;path=/";
+                    document.cookie = "3=;path=/";
+                    document.cookie = "2=;path=/";
+                    document.cookie = "1=;path=/";
+                    document.cookie = "0=;path=/";
+                }
+            } else {
+                for (var x = 0; x < 9; x++) {
+                    if (x == 0) {
+                        if (cookies[x][2] == 1) {
+                            drawX(cookies[x][0]);
+                            turn++;
+                        } else if (cookies[x][2] == 2) {
+                            drawO(cookies[x][0]);
+                            turn++
+                        }
+                    } else {
+                        if (cookies[x][3] == 1) {
+                            drawX(cookies[x][1]);
+                            turn++;
+                        } else if (cookies[x][3] == 2) {
+                            drawO(cookies[x][1]);
+                            turn++
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+        function getScores() {
+
+
+
+            $.get("x.txt", function(data) {
+                document.getElementById("xscore").innerText = data;
+            });
+
+            $.get("t.txt", function(data) {
+                document.getElementById("tscore").innerText = data;
+
+            });
+            $.get("y.txt", function(data) {
+                document.getElementById("yscore").innerText = data;
+
+            });
+
+        }
+
+
+        function updateT() {
+            var x = 20;
+            $.post("t.txt", {
+                name: "John",
+                time: "2pm"
+            });
+        }
+
+        function canvasClicked(x) {
+
+            //            alert(isPainted[x]);
+            if (isPainted[x] != true) {
+                if (turn % 2 == 0) {
+                    drawX(x);
+                    turn++;
+                } else {
+                    drawO(x);
+                    turn++;
+                }
+
+                checkForWinners(canvasContent[x]);
+                if (squaresFilled == 9) {
+                    alert("Tie Game!");
+                    playAgain();
+                }
+            }
+        }
+
+        function checkForWinners(symbol) {
+
+            for (var a = 0; a < winningCombos.length; a++) {
+                if (canvasContent[winningCombos[a][0]] == symbol && canvasContent[winningCombos[a][1]] == symbol && canvasContent[winningCombos[a][2]] == symbol) {
+                    alert(symbol + " Wins!");
+                    playAgain();
+                }
+            }
+
+        }
+
+        function playAgain() {
+            for (var x = 0; x < 9; x++) {
+                clearBox(x);
+            }
+            squaresFilled = 0;
+            turn = 0;
+        }
+
+        function drawX(input) {
+            theCanvas = "canvas" + input;
+            c = document.getElementById(theCanvas);
+            //accesses the document, find if there is an id which corresponds to the "theCanvas" variable
+            cxt = c.getContext("2d");
+            cxt.beginPath();
+            cxt.moveTo(10, 10);
+            cxt.lineTo(90, 90);
+            cxt.moveTo(90, 10);
+            cxt.lineTo(10, 90);
+
+            cxt.stroke();
+            cxt.closePath();
+            canvasContent[input] = 'X';
+            isPainted[input] = true;
+            squaresFilled++;
+            setCookie(input, 1);
+        }
+
+        function drawO(input) {
+            theCanvas = "canvas" + input;
+            c = document.getElementById(theCanvas);
+            //accesses the document, find if there is an id which corresponds to the "theCanvas" variable
+            cxt = c.getContext("2d");
+            cxt.beginPath();
+            cxt.arc(50, 50, 40, 0, Math.PI * 2, true);
+
+            cxt.stroke();
+            cxt.closePath();
+
+            canvasContent[input] = 'O';
+            isPainted[input] = true;
+            squaresFilled++;
+            setCookie(input, 2);
+        }
+
+        function clearBox(x) {
+            isPainted[x] = false;
+            canvasContent[x] = ' ';
+            c = document.getElementById("canvas" + x);
+            cxt = c.getContext("2d");
+            cxt.clearRect(0, 0, c.width, c.height);
+            setCookie(x, 0);
+        }
+
+        function setCookie(x, y) {
+            var name = x;
+            var value = y;
+            document.cookie = name + "=" + value + ";path=/";
+        }
+
+    </script>
+
+
+</head>
+
+<body>
+    <h1>Tic Tac Toe</h1>
+    <h2> Kevin Tran</h2>
+    <p>X Score: <span id="xscore">X</span> <br />Y Score: <span id="yscore">Y</span> <br />Ties: <span id="tscore">T</span>
+    </p>
+
+    <canvas id="canvas0" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(0)"></canvas>
+
+    <canvas id="canvas1" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(1)"></canvas>
+
+    <canvas id="canvas2" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(2)"></canvas><br/>
+
+    <canvas id="canvas3" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(3)"></canvas>
+
+    <canvas id="canvas4" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(4)"></canvas>
+
+    <canvas id="canvas5" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(5)"></canvas><br/>
+
+    <canvas id="canvas6" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(6)"></canvas>
+
+    <canvas id="canvas7" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(7)"></canvas>
+
+    <canvas id="canvas8" width="100" height="100" style="border:1px solid black" onclick="canvasClicked(8)"></canvas>
+
+
+</body>
+
+</html>
